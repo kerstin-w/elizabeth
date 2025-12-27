@@ -1,0 +1,29 @@
+/**
+ * Article Template JSON Configuration
+ */
+{
+  "sections": {
+    "template": {
+      "type": "template-article",
+      "blocks": {
+        "title": {
+          "type": "article_title"
+        },
+        "author": {
+          "type": "article_author"
+        },
+        "date": {
+          "type": "article_published_date"
+        },
+        "image": {
+          "type": "featured_image"
+        },
+        "content": {
+          "type": "article_content"
+        }
+      },
+      "block_order": ["image", "title", "date", "author", "content"]
+    }
+  },
+  "order": ["template"]
+}
