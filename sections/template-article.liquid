@@ -17,21 +17,27 @@
   Blocks:
   - Each block has a type, name, and limit on how many can be added to the section.
 {%- endcomment -%}
-<article class="py-8">
+<article
+  class="py-8"
+  itemscope
+  itemtype="http://schema.org/BlogPosting">
   {% for block in section.blocks %}
     {% case block.type %}
       {% when 'article_title' %}
         <div class="flex items-center justify-center">
           <div class="max-w-7xl text-center">
             <a href="{{ blog.url }}" class="text-base uppercase text-gray-500 hover:text-gray-900 font-bold">{{ blog.title }}</a>
-            <h1 class="text-4xl md:text-6xl font-medium">{{ article.title }}</h1>
+            <h1 class="text-4xl md:text-6xl font-medium" itemprop="headline">{{ article.title }}</h1>
           </div>
         </div>
       {% when 'article_author' %}
         <div class="flex items-center justify-center">
-          <div class="max-w-7xl text-center">
+          <div
+            class="max-w-7xl text-center"
+            itemscope
+            itemtype="http://schema.org/Person">
             {% if section.settings.enable_author %}
-              <small>{{ article.author }}</small>
+              <small itemprop="author">{{ article.author }}</small>
             {% endif %}
           </div>
         </div>
@@ -39,14 +45,15 @@
         <div class="flex items-center justify-center">
           <div class="max-w-7xl text-center">
             {% if section.settings.enable_date %}
-              <time datetime="{{ article.published_at | date: format: 'on_date' }}">
+              <time datetime="{{ article.published_at | date: "%Y-%m-%dT%H:%M:%S%z" }}" itemprop="datePublished">
                 {{ article.published_at | date: "%B %d, %Y" }}
               </time>
+              <meta itemprop="dateCreated" content="2025-12-27T00:00:00+0100">
             {% endif %}
           </div>
         </div>
       {% when 'featured_image' %}
-        <div class="max-w-7xl bg-blue-100 rounded-lg mx-2 md:mx-auto overflow-hidden my-4">
+        <div itemprop="image" class="max-w-7xl bg-blue-100 rounded-lg mx-2 md:mx-auto overflow-hidden my-4">
           {% if article.image != blank %}
             <img
               src="{{ article.image | img_url: 'large' }}"
@@ -62,7 +69,7 @@
         </div>
       {% when 'article_content' %}
         <div class="flex items-center justify-center">
-          <div class="max-w-7xl">
+          <div itemprop="articleBody" class="max-w-7xl">
             {{ article.content }}</div>
         </div>
     {% else %}
@@ -173,6 +180,35 @@
       {% endform %}
     </div>
   {% endif %}
+
+  {%- comment -%}
+    Structured data (JSON-LD) for blog articles to improve SEO and enable rich results in search engines.
+  {%- endcomment -%}
+
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "BlogPosting",
+      "headline": {{ article.title | json }},
+      "articleBody": {{ article.content | strip_html | json }},
+      {% if article.excerpt != blank %}
+        "description": {{ article.excerpt | strip_html | json }},
+        {% endif %}
+        {% if article.image %}
+          "image" : [{{ article.image | img_url: 'medium' |  prepend: 'https:' |  json }}],
+          {% endif %}
+          "datePublished": {{ article.published_at | date: "%Y-%m-%dT%H:%M:%S%z" | json }},
+          "dateCreated": {{ article.created_at | date: "%Y-%m-%dT%H:%M:%S%z" | json }},
+          "author": {
+            "@type": "Person",
+            "name": {{ article.author | json }}
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": {{ shop.name | json }}
+          }
+        }
+  </script>
 
 
   {% schema %}
