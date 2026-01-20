@@ -1,7 +1,7 @@
 <div class="py-8">
   {% paginate blog.articles by section.settings.number_of_blog_posts %}
 
-    <h1 class="text-center text-3xl">{{ blog.title }}</h1>
+    <h1 class="text-center {{ section.settings.heading_size }}">{{ blog.title }}</h1>
 
     <div class="max-w-6xl mx-auto">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -28,9 +28,11 @@
                 {% if section.settings.show_excerpt %}
                   <div class="flex-grow">
                     {% if article.excerpt.size > 0 %}
-                      <p>{{ article.excerpt | strip_html | truncatewords: 15 }}</p>
+                      <p>{{ article.excerpt | strip_html | truncatewords: section.settings.excerpt_length }}</p>
+
                     {% else %}
-                      <p>{{ article.content | strip_html | truncatewords: 15 }}</p>
+                      <p>{{ article.content | strip_html | truncatewords: section.settings.excerpt_length }}</p>
+
                     {% endif %}
                   </div>
                 {% endif %}
@@ -77,6 +79,22 @@
         "id": "show_excerpt",
         "label": "Show article description",
         "default": true
+      },
+          {
+        "type": "range",
+        "id": "excerpt_length",
+        "min": 10,
+        "max": 50,
+        "step": 5,
+        "label": "Excerpt word count",
+        "default": 15
+      },
+      {
+        "type": "text",
+        "id": "heading_size",
+        "label": "Blog title heading size",
+        "default": "text-3xl",
+        "info": "Tailwind class (e.g., text-2xl, text-4xl)"
       }
     ]
   }
