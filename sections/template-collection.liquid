@@ -7,32 +7,9 @@
     <div class="max-w-6xl mx-auto">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         {% for product in collection.products %}
-          <div class="w-full py-6 px-3">
-            <div class="border border-gray-200 bg-white shadow-lg rounded-lg overflow-hidden">
-              <a href="{{ product.url }}">
 
-                <div class="h-80 overflow-hidden">
-                  {% if product.featured_image %}
-                    <img
-                      src="{{ product.featured_image | image_url: width: 500 }}"
-                      alt="{{ product.featured_image.alt | escape }}"
-                      width="500"
-                      height="500"
-                      loading="lazy"
-                      class="w-full h-full object-cover">
-                  {% else %}
-                    {{ 'product-1' | placeholder_svg_tag: 'w-full h-full object-cover' }}
-                  {% endif %}
-                </div>
-              </a>
-              <div class="flex flex-col p-4">
-                <span class="text-sm text-gray-400">{{ product.vendor }}</span>
-                <a href="{{ product.url }}" class="text-gray-700 uppercase font-medium">{{ product.title }}</a>
-                <p class="text-gray-500">{{ product.price | money }}</p>
-              </div>
-            </div>
-          </div>
-
+          {% render 'product-card'
+            , product: product %}
         {% else %}
           <p>There are no products inside this collection.</p>
         {% endfor %}
