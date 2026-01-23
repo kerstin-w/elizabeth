@@ -1,0 +1,233 @@
+{% comment %} Mobile Grid-Klassen hardcoded {% endcomment %}
+{% case section.settings.collections_per_row_mobile %}
+  {% when 1 %}
+    {% assign grid_class_mobile = 'grid-cols-1' %}
+  {% when 2 %}
+    {% assign grid_class_mobile = 'grid-cols-2' %}
+  {% when 3 %}
+    {% assign grid_class_mobile = 'grid-cols-3' %}
+  {% else %}
+    {% assign grid_class_mobile = 'grid-cols-1' %}
+{% endcase %}
+
+{% comment %} Desktop Grid-Klassen hardcoded {% endcomment %}
+{% case section.settings.collections_per_row_desktop %}
+  {% when 2 %}
+    {% assign grid_class_desktop = 'md:grid-cols-2' %}
+  {% when 3 %}
+    {% assign grid_class_desktop = 'md:grid-cols-3' %}
+  {% when 4 %}
+    {% assign grid_class_desktop = 'md:grid-cols-4' %}
+  {% else %}
+    {% assign grid_class_desktop = 'md:grid-cols-3' %}
+{% endcase %}
+
+{% comment %} Bild-Verhältnis Klassen {% endcomment %}
+{% case section.settings.image_ratio %}
+  {% when 'square' %}
+    {% assign image_height = 'h-80' %}
+  {% when 'portrait' %}
+    {% assign image_height = 'h-96' %}
+  {% when 'landscape' %}
+    {% assign image_height = 'h-64' %}
+  {% else %}
+    {% assign image_height = 'h-80' %}
+{% endcase %}
+
+<div class="flex flex-col items-center" style="padding-top: {{ section.settings.section_padding_top }}px; padding-bottom: {{ section.settings.section_padding_bottom }}px;">
+
+  <h1 class="text-3xl font-medium">{{ section.settings.title }}</h1>
+
+  {% if section.settings.subtitle != blank %}
+    <div class="text-lg text-gray-600 mt-2 max-w-2xl text-center">
+      {{ section.settings.subtitle }}
+    </div>
+  {% endif %}
+
+  <div class="max-w-6xl mx-auto my-3 w-full px-4">
+    <div class="grid {{ grid_class_mobile }} {{ grid_class_desktop }} gap-6">
+      {% for collection in collections %}
+        {% if collection.all_products_count > 0 or section.settings.show_empty_collections %}
+          <div class="w-full">
+            <div class="border bg-white overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <a href="{{ collection.url }}">
+                <div class="{{ image_height }} overflow-hidden">
+                  {% if collection.featured_image != blank %}
+                    {% assign collection_image = collection.featured_image %}
+                  {% else %}
+                    {% assign collection_image = collection.products.first.image %}
+                  {% endif %}
+
+                  {% if collection_image != blank %}
+                    <img
+                      src="{{ collection_image | image_url: width: 500 }}"
+                      width="500"
+                      height="500"
+                      alt="{{ collection.title | escape }}"
+                      loading="lazy"
+                      class="w-full h-full object-cover transition duration-300 ease-in-out transform hover:scale-105">
+                  {% else %}
+                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <span class="text-gray-400">Kein Bild</span>
+                    </div>
+                  {% endif %}
+                </div>
+              </a>
+
+              <div class="p-4 text-{{ section.settings.text_alignment }}" style="background-color: {{ section.settings.background_color }};">
+                <h2 class="text-xl font-medium" style="color: {{ section.settings.title_color }};">
+                  {{ collection.title }}
+                </h2>
+
+                {% if section.settings.show_product_count %}
+                  <p class="text-sm text-gray-600 mt-1">
+                    {{ collection.all_products_count }}
+                    {% if collection.all_products_count == 1 %}
+                      Produkt
+                    {% else %}
+                      Produkte
+                    {% endif %}
+                  </p>
+                {% endif %}
+
+                {% if section.settings.show_collection_description and collection.description != blank %}
+                  <div class="text-sm text-gray-600 mt-2 line-clamp-2">
+                    {{ collection.description | strip_html | truncate: 100 }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+
+{% schema %}
+  {
+    "name": "Template List Collections",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Überschrift",
+        "default": "Kollektionen"
+      },
+      {
+        "type": "richtext",
+        "id": "subtitle",
+        "label": "Untertitel (optional)",
+        "info": "Wird unter der Überschrift angezeigt"
+      },
+      {
+        "type": "header",
+        "content": "Grid Layout"
+      },
+      {
+        "type": "range",
+        "id": "collections_per_row_mobile",
+        "min": 1,
+        "max": 3,
+        "step": 1,
+        "label": "Kollektionen pro Zeile (Mobile)",
+        "default": 1,
+        "info": "Funktioniert auf Bildschirmen unter 768px Breite"
+      }, {
+        "type": "range",
+        "id": "collections_per_row_desktop",
+        "min": 2,
+        "max": 4,
+        "step": 1,
+        "label": "Kollektionen pro Zeile (Desktop)",
+        "default": 3,
+        "info": "Funktioniert auf Bildschirmen ab 768px Breite"
+      }, {
+        "type": "checkbox",
+        "id": "show_empty_collections",
+        "label": "Leere Kollektionen anzeigen",
+        "default": false,
+        "info": "Kollektionen ohne Produkte werden normalerweise ausgeblendet"
+      }, {
+        "type": "select",
+        "id": "image_ratio",
+        "label": "Bild-Verhältnis",
+        "options": [
+          {
+            "value": "square",
+            "label": "Quadratisch (1:1)"
+          }, {
+            "value": "portrait",
+            "label": "Hochformat (3:4)"
+          }, {
+            "value": "landscape",
+            "label": "Querformat (16:9)"
+          }
+        ],
+        "default": "square"
+      }, {
+        "type": "header",
+        "content": "Layout-Einstellungen"
+      }, {
+        "type": "range",
+        "id": "section_padding_top",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "Abstand oben",
+        "default": 32
+      }, {
+        "type": "range",
+        "id": "section_padding_bottom",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "Abstand unten",
+        "default": 32
+      }, {
+        "type": "header",
+        "content": "Design-Optionen"
+      }, {
+        "type": "checkbox",
+        "id": "show_collection_description",
+        "label": "Kollektion-Beschreibung anzeigen",
+        "default": false
+      }, {
+        "type": "checkbox",
+        "id": "show_product_count",
+        "label": "Produktanzahl anzeigen",
+        "default": true
+      }, {
+        "type": "select",
+        "id": "text_alignment",
+        "label": "Text-Ausrichtung",
+        "options": [
+          {
+            "value": "left",
+            "label": "Links"
+          }, {
+            "value": "center",
+            "label": "Zentriert"
+          }, {
+            "value": "right",
+            "label": "Rechts"
+          }
+        ],
+        "default": "left"
+      }, {
+        "type": "color",
+        "id": "title_color",
+        "label": "Farbe der Kollektion-Titel",
+        "default": "#000000"
+      }, {
+        "type": "color",
+        "id": "background_color",
+        "label": "Hintergrundfarbe der Karten",
+        "default": "#f3f4f6"
+      }
+    ]
+  }
+{% endschema %}
