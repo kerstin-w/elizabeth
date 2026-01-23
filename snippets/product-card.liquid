@@ -1,16 +1,16 @@
 <div class="w-full py-6 px-3">
   <div class="border border-gray-200 bg-white shadow-lg rounded-lg overflow-hidden">
-    <a href="{{ product.url }}">
+    <a href="{{ product_product.url }}">
 
       <div class="h-80 overflow-hidden">
-        {% if product.featured_image %}
+        {% if product_product.featured_image %}
           <img
-            src="{{ product.featured_image | image_url: width: 500 }}"
-            alt="{{ product.featured_image.alt | escape }}"
+            src="{{ product_product.featured_image | image_url: width: 500 }}"
+            alt="{{ product_product.featured_image.alt | escape }}"
             width="500"
             height="500"
             loading="lazy"
-            class="w-full h-full object-cover">
+            class="w-full h-full object-cover transition duration-1000 ease-in-out hover:scale-105 transform">
         {% else %}
           {{ 'product-1' | placeholder_svg_tag: 'w-full h-full object-cover' }}
         {% endif %}
@@ -18,10 +18,10 @@
     </a>
     <div class="flex flex-col p-4">
       {% if show_vendor %}
-        <span class="text-sm text-gray-400">{{ product.vendor }}</span>
+        <span class="text-sm text-gray-400">{{ product_product.vendor }}</span>
       {% endif %}
-      <a href="{{ product.url }}" class="text-gray-700 uppercase font-medium">{{ product.title }}</a>
-      <p class="text-gray-500">{{ product.price | money }}</p>
+      <a href="{{ product_product.url }}" class="text-gray-700 uppercase font-medium">{{ product_product.title }}</a>
+      <p class="text-gray-500">{{ product_product.price | money }}</p>
     </div>
   </div>
 </div>
