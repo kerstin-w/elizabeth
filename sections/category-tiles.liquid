@@ -1,0 +1,651 @@
+{% comment %}
+  Category Tiles Section
+  Displays clickable category tiles in a responsive grid layout
+{% endcomment %}
+
+<style>
+  .category-tile-overlay {
+    transition: opacity 0.3s ease;
+  }
+  {% if section.settings.overlay_hover_effect %}
+  .category-tile:hover .category-tile-overlay {
+    opacity: {{ section.settings.overlay_hover_opacity | times: 0.01 }} !important;
+  }
+  {% endif %}
+</style>
+
+<div class="category-tiles py-{{ section.settings.section_padding_top }} pb-{{ section.settings.section_padding_bottom }} bg-{{ section.settings.background_color }}">
+  <div class="{% if section.settings.container_width == 'full' %}w-full px-4{% else %}max-w-{{ section.settings.container_width }} mx-auto px-4{% endif %}">
+    
+    {% if section.settings.show_heading %}
+      <div class="text-{{ section.settings.heading_alignment }} mb-{{ section.settings.heading_spacing }}">
+        {% if section.settings.heading != blank %} 
+          <h2 class="text-{{ section.settings.heading_size }} font-{{ section.settings.heading_weight }} text-gray-900">
+            {{ section.settings.heading }}
+          </h2>
+        {% endif %}
+        {% if section.settings.subheading != blank %}
+          <p class="text-{{ section.settings.subheading_size }} text-gray-600 mt-2">
+            {{ section.settings.subheading }}
+          </p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="grid grid-cols-{{ section.settings.mobile_columns }} md:grid-cols-{{ section.settings.tablet_columns }} lg:grid-cols-{{ section.settings.desktop_columns }} gap-{{ section.settings.gap_size }}">
+      {% for block in section.blocks %}
+        <a 
+          href="{{ block.settings.link }}" 
+          class="category-tile group relative overflow-hidden rounded-{{ section.settings.tile_border_radius }} {% if section.settings.tile_style == 'shadow' %}shadow-lg hover:shadow-xl{% elsif section.settings.tile_style == 'border' %}border-2 border-gray-200 hover:border-gray-900{% endif %} transition-all duration-300"
+          {{ block.shopify_attributes }}
+        >
+          <div class="relative aspect-{{ section.settings.tile_aspect_ratio }}">
+            {% if block.settings.image != blank %}
+              <img
+                src="{{ block.settings.image | image_url: width: 800 }}"
+                alt="{{ block.settings.image.alt | default: block.settings.title }}"
+                class="w-full h-full object-cover {% if section.settings.image_hover_effect == 'zoom' %}group-hover:scale-110{% elsif section.settings.image_hover_effect == 'brightness' %}group-hover:brightness-110{% endif %} transition-transform duration-500"
+                loading="lazy"
+                width="800"
+                height="800"
+              >
+            {% else %}
+              <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            {% endif %}
+
+            {% if section.settings.overlay_enable %}
+              <div 
+                class="category-tile-overlay absolute inset-0 bg-{{ section.settings.overlay_color }}"
+                style="opacity: {{ section.settings.overlay_opacity | times: 0.01 }};"
+              ></div>
+            {% endif %}
+          </div>
+
+          <div class="{% if section.settings.text_position == 'overlay' %}absolute inset-0 flex flex-col justify-{{ section.settings.text_vertical_align }} items-{{ section.settings.text_horizontal_align }} p-{{ section.settings.text_padding }} z-10{% else %}p-{{ section.settings.text_padding }}{% endif %}">
+            {% if block.settings.title != blank %}
+              <h3 class="text-{{ section.settings.title_size }} font-{{ section.settings.title_weight }} {% if section.settings.text_position == 'overlay' %}text-{{ section.settings.text_color }}{% else %}text-gray-900{% endif %} mb-2">
+                {{ block.settings.title }}
+              </h3>
+            {% endif %}
+            
+            {% if block.settings.description != blank %}
+              <p class="text-{{ section.settings.description_size }} {% if section.settings.text_position == 'overlay' %}text-{{ section.settings.text_color }}{% else %}text-gray-600{% endif %}">
+                {{ block.settings.description }}
+              </p>
+            {% endif %}
+
+            {% if section.settings.show_button %}
+              <span class="inline-block mt-4 px-{{ section.settings.button_padding_x }} py-{{ section.settings.button_padding_y }} bg-{{ section.settings.button_bg_color }} text-{{ section.settings.button_text_color }} rounded-{{ section.settings.button_border_radius }} text-{{ section.settings.button_text_size }} font-{{ section.settings.button_font_weight }} group-hover:bg-{{ section.settings.button_hover_bg_color }} transition-colors">
+                {{ section.settings.button_text }}
+              </span>
+            {% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Category Tiles",
+  "tag": "section",
+  "class": "section-category-tiles",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Layout"
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Container Width",
+      "options": [
+        { "value": "full", "label": "Full Width" },
+        { "value": "7xl", "label": "Extra Large (1280px)" },
+        { "value": "6xl", "label": "Large (1152px)" },
+        { "value": "5xl", "label": "Medium (1024px)" },
+        { "value": "4xl", "label": "Small (896px)" }
+      ],
+      "default": "6xl"
+    },
+    {
+      "type": "select",
+      "id": "section_padding_top",
+      "label": "Section Padding Top",
+      "options": [
+        { "value": "0", "label": "None" },
+        { "value": "4", "label": "Small" },
+        { "value": "8", "label": "Medium" },
+        { "value": "12", "label": "Large" },
+        { "value": "16", "label": "Extra Large" }
+      ],
+      "default": "12"
+    },
+    {
+      "type": "select",
+      "id": "section_padding_bottom",
+      "label": "Section Padding Bottom",
+      "options": [
+        { "value": "0", "label": "None" },
+        { "value": "4", "label": "Small" },
+        { "value": "8", "label": "Medium" },
+        { "value": "12", "label": "Large" },
+        { "value": "16", "label": "Extra Large" }
+      ],
+      "default": "12"
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "label": "Background Color",
+      "options": [
+        { "value": "white", "label": "White" },
+        { "value": "gray-50", "label": "Light Gray" },
+        { "value": "gray-100", "label": "Gray" },
+        { "value": "transparent", "label": "Transparent" }
+      ],
+      "default": "white"
+    },
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_heading",
+      "label": "Show Heading",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop by Category"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Explore our collection"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading Size",
+      "options": [
+        { "value": "2xl", "label": "Small" },
+        { "value": "3xl", "label": "Medium" },
+        { "value": "4xl", "label": "Large" },
+        { "value": "5xl", "label": "Extra Large" }
+      ],
+      "default": "3xl"
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Heading Weight",
+      "options": [
+        { "value": "normal", "label": "Normal" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "semibold", "label": "Semibold" },
+        { "value": "bold", "label": "Bold" }
+      ],
+      "default": "bold"
+    },
+    {
+      "type": "select",
+      "id": "subheading_size",
+      "label": "Subheading Size",
+      "options": [
+        { "value": "sm", "label": "Small" },
+        { "value": "base", "label": "Medium" },
+        { "value": "lg", "label": "Large" }
+      ],
+      "default": "base"
+    },
+    {
+      "type": "select",
+      "id": "heading_spacing",
+      "label": "Spacing Below Heading",
+      "options": [
+        { "value": "4", "label": "Small" },
+        { "value": "6", "label": "Medium" },
+        { "value": "8", "label": "Large" },
+        { "value": "12", "label": "Extra Large" }
+      ],
+      "default": "8"
+    },
+    {
+      "type": "header",
+      "content": "Grid Layout"
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile Columns",
+      "options": [
+        { "value": "1", "label": "1 Column" },
+        { "value": "2", "label": "2 Columns" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "select",
+      "id": "tablet_columns",
+      "label": "Tablet Columns",
+      "options": [
+        { "value": "2", "label": "2 Columns" },
+        { "value": "3", "label": "3 Columns" },
+        { "value": "4", "label": "4 Columns" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "desktop_columns",
+      "label": "Desktop Columns",
+      "options": [
+        { "value": "2", "label": "2 Columns" },
+        { "value": "3", "label": "3 Columns" },
+        { "value": "4", "label": "4 Columns" },
+        { "value": "5", "label": "5 Columns" },
+        { "value": "6", "label": "6 Columns" }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "select",
+      "id": "gap_size",
+      "label": "Gap Between Tiles",
+      "options": [
+        { "value": "2", "label": "Extra Small" },
+        { "value": "4", "label": "Small" },
+        { "value": "6", "label": "Medium" },
+        { "value": "8", "label": "Large" }
+      ],
+      "default": "6"
+    },
+    {
+      "type": "header",
+      "content": "Tile Design"
+    },
+    {
+      "type": "select",
+      "id": "tile_aspect_ratio",
+      "label": "Tile Aspect Ratio",
+      "options": [
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "video", "label": "Video (16:9)" },
+        { "value": "[4/3]", "label": "Landscape (4:3)" },
+        { "value": "[3/4]", "label": "Portrait (3:4)" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "select",
+      "id": "tile_style",
+      "label": "Tile Style",
+      "options": [
+        { "value": "shadow", "label": "Shadow" },
+        { "value": "border", "label": "Border" },
+        { "value": "none", "label": "None" }
+      ],
+      "default": "shadow"
+    },
+    {
+      "type": "select",
+      "id": "tile_border_radius",
+      "label": "Tile Border Radius",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "sm", "label": "Small" },
+        { "value": "md", "label": "Medium" },
+        { "value": "lg", "label": "Large" },
+        { "value": "xl", "label": "Extra Large" },
+        { "value": "full", "label": "Full (Circle)" }
+      ],
+      "default": "lg"
+    },
+    {
+      "type": "select",
+      "id": "image_hover_effect",
+      "label": "Image Hover Effect",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "zoom", "label": "Zoom In" },
+        { "value": "brightness", "label": "Brighten" }
+      ],
+      "default": "zoom"
+    },
+    {
+      "type": "header",
+      "content": "Image Overlay"
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_enable",
+      "label": "Enable Overlay",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "overlay_color",
+      "label": "Overlay Color",
+      "options": [
+        { "value": "black", "label": "Black" },
+        { "value": "white", "label": "White" },
+        { "value": "gray-900", "label": "Dark Gray" }
+      ],
+      "default": "black"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay Opacity",
+      "min": 0,
+      "max": 80,
+      "step": 10,
+      "default": 30,
+      "unit": "%"
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_hover_effect",
+      "label": "Change Opacity on Hover",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "overlay_hover_opacity",
+      "label": "Overlay Opacity on Hover",
+      "min": 0,
+      "max": 80,
+      "step": 10,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "Text Settings"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Text Position",
+      "options": [
+        { "value": "overlay", "label": "Overlay on Image" },
+        { "value": "below", "label": "Below Image" }
+      ],
+      "default": "overlay"
+    },
+    {
+      "type": "select",
+      "id": "text_vertical_align",
+      "label": "Text Vertical Alignment (Overlay)",
+      "options": [
+        { "value": "start", "label": "Top" },
+        { "value": "center", "label": "Center" },
+        { "value": "end", "label": "Bottom" }
+      ],
+      "default": "end",
+      "info": "Only applies when text position is 'Overlay on Image'"
+    },
+    {
+      "type": "select",
+      "id": "text_horizontal_align",
+      "label": "Text Horizontal Alignment (Overlay)",
+      "options": [
+        { "value": "start", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "end", "label": "Right" }
+      ],
+      "default": "start",
+      "info": "Only applies when text position is 'Overlay on Image'"
+    },
+    {
+      "type": "select",
+      "id": "text_padding",
+      "label": "Text Padding",
+      "options": [
+        { "value": "2", "label": "Small" },
+        { "value": "4", "label": "Medium" },
+        { "value": "6", "label": "Large" },
+        { "value": "8", "label": "Extra Large" }
+      ],
+      "default": "6"
+    },
+    {
+      "type": "select",
+      "id": "text_color",
+      "label": "Text Color (Overlay)",
+      "options": [
+        { "value": "white", "label": "White" },
+        { "value": "black", "label": "Black" },
+        { "value": "gray-900", "label": "Dark Gray" }
+      ],
+      "default": "white",
+      "info": "Only applies when text position is 'Overlay on Image'"
+    },
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "Title Size",
+      "options": [
+        { "value": "base", "label": "Small" },
+        { "value": "lg", "label": "Medium" },
+        { "value": "xl", "label": "Large" },
+        { "value": "2xl", "label": "Extra Large" }
+      ],
+      "default": "xl"
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Title Weight",
+      "options": [
+        { "value": "normal", "label": "Normal" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "semibold", "label": "Semibold" },
+        { "value": "bold", "label": "Bold" }
+      ],
+      "default": "semibold"
+    },
+    {
+      "type": "select",
+      "id": "description_size",
+      "label": "Description Size",
+      "options": [
+        { "value": "xs", "label": "Extra Small" },
+        { "value": "sm", "label": "Small" },
+        { "value": "base", "label": "Medium" }
+      ],
+      "default": "sm"
+    },
+    {
+      "type": "header",
+      "content": "Button Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button",
+      "label": "Show Button",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "select",
+      "id": "button_bg_color",
+      "label": "Button Background",
+      "options": [
+        { "value": "gray-900", "label": "Dark" },
+        { "value": "white", "label": "White" },
+        { "value": "gray-200", "label": "Light Gray" },
+        { "value": "transparent", "label": "Transparent" }
+      ],
+      "default": "gray-900"
+    },
+    {
+      "type": "select",
+      "id": "button_hover_bg_color",
+      "label": "Button Hover Background",
+      "options": [
+        { "value": "gray-700", "label": "Dark" },
+        { "value": "gray-100", "label": "Light Gray" },
+        { "value": "white", "label": "White" }
+      ],
+      "default": "gray-700"
+    },
+    {
+      "type": "select",
+      "id": "button_text_color",
+      "label": "Button Text Color",
+      "options": [
+        { "value": "white", "label": "White" },
+        { "value": "black", "label": "Black" },
+        { "value": "gray-900", "label": "Dark Gray" }
+      ],
+      "default": "white"
+    },
+    {
+      "type": "select",
+      "id": "button_text_size",
+      "label": "Button Text Size",
+      "options": [
+        { "value": "xs", "label": "Extra Small" },
+        { "value": "sm", "label": "Small" },
+        { "value": "base", "label": "Medium" }
+      ],
+      "default": "sm"
+    },
+    {
+      "type": "select",
+      "id": "button_font_weight",
+      "label": "Button Font Weight",
+      "options": [
+        { "value": "normal", "label": "Normal" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "semibold", "label": "Semibold" },
+        { "value": "bold", "label": "Bold" }
+      ],
+      "default": "semibold"
+    },
+    {
+      "type": "select",
+      "id": "button_padding_x",
+      "label": "Button Horizontal Padding",
+      "options": [
+        { "value": "3", "label": "Small" },
+        { "value": "4", "label": "Medium" },
+        { "value": "6", "label": "Large" }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "select",
+      "id": "button_padding_y",
+      "label": "Button Vertical Padding",
+      "options": [
+        { "value": "1", "label": "Small" },
+        { "value": "2", "label": "Medium" },
+        { "value": "3", "label": "Large" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "button_border_radius",
+      "label": "Button Border Radius",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "sm", "label": "Small" },
+        { "value": "md", "label": "Medium" },
+        { "value": "lg", "label": "Large" },
+        { "value": "full", "label": "Full (Pill)" }
+      ],
+      "default": "md"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Category Tile",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Category Name"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description (Optional)"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Category Tiles",
+      "blocks": [
+        {
+          "type": "category",
+          "settings": {
+            "title": "Category 1"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "title": "Category 2"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "title": "Category 3"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "title": "Category 4"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
