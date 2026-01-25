@@ -71,11 +71,13 @@
         {% for block in section.blocks %}
           {% case block.type %}
             {% when 'vendor' %}
-              <div class="mt-{{ block.settings.margin_top }} mb-{{ block.settings.margin_bottom }}">
+              {% assign spacing = block.settings.spacing | default: 'my-3' %}
+              <div class="{{ spacing }}" >
                 <span class="text-xs text-gray-500">{{ product.vendor }}</span>
               </div>
             {% when 'title' %}
-              <div class="mt-{{ block.settings.margin_top }} mb-{{ block.settings.margin_bottom }}">
+              {% assign spacing = block.settings.spacing | default: 'my-3' %}
+              <div class="{{ spacing }}">
                 <h1 class="text-3xl text-gray-900">{{ product.title }}</h1>
               </div>
             {% when 'price' %}
@@ -313,62 +315,36 @@
           "settings": [
             {
               "type": "select",
-              "id": "margin_top",
-              "label": "Margin Top",
+              "id": "spacing",
+              "label": "Spacing",
               "options": [
                 {
-                  "value": "0",
+                  "value": "my-0",
                   "label": "None"
                 },
                 {
-                  "value": "1",
+                  "value": "my-1",
+                  "label": "Extra Small"
+                },
+                {
+                  "value": "my-2",
                   "label": "Small"
                 },
                 {
-                  "value": "2",
-                  "label": "Medium"
-                },
-                {
-                  "value": "3",
-                  "label": "Default"
+                  "value": "my-3",
+                  "label": "Medium (Default)"
                 }, {
-                  "value": "4",
+                  "value": "my-4",
                   "label": "Large"
                 }, {
-                  "value": "6",
+                  "value": "my-6",
                   "label": "Extra Large"
+                }, {
+                  "value": "my-8",
+                  "label": "2X Large"
                 }
               ],
-              "default": "3"
-            }, {
-              "type": "select",
-              "id": "margin_bottom",
-              "label": "Margin Bottom",
-              "options": [
-                {
-                  "value": "0",
-                  "label": "None"
-                },
-                {
-                  "value": "1",
-                  "label": "Small"
-                },
-                {
-                  "value": "2",
-                  "label": "Medium"
-                },
-                {
-                  "value": "3",
-                  "label": "Default"
-                }, {
-                  "value": "4",
-                  "label": "Large"
-                }, {
-                  "value": "6",
-                  "label": "Extra Large"
-                }
-              ],
-              "default": "3"
+              "default": "my-3"
             }
           ]
         },
@@ -379,62 +355,36 @@
           "settings": [
             {
               "type": "select",
-              "id": "margin_top",
-              "label": "Margin Top",
+              "id": "spacing",
+              "label": "Spacing",
               "options": [
                 {
-                  "value": "0",
+                  "value": "my-0",
                   "label": "None"
                 },
                 {
-                  "value": "1",
+                  "value": "my-1",
+                  "label": "Extra Small"
+                },
+                {
+                  "value": "my-2",
                   "label": "Small"
                 },
                 {
-                  "value": "2",
-                  "label": "Medium"
-                },
-                {
-                  "value": "3",
-                  "label": "Default"
+                  "value": "my-3",
+                  "label": "Medium (Default)"
                 }, {
-                  "value": "4",
+                  "value": "my-4",
                   "label": "Large"
                 }, {
-                  "value": "6",
+                  "value": "my-6",
                   "label": "Extra Large"
+                }, {
+                  "value": "my-8",
+                  "label": "2X Large"
                 }
               ],
-              "default": "3"
-            }, {
-              "type": "select",
-              "id": "margin_bottom",
-              "label": "Margin Bottom",
-              "options": [
-                {
-                  "value": "0",
-                  "label": "None"
-                },
-                {
-                  "value": "1",
-                  "label": "Small"
-                },
-                {
-                  "value": "2",
-                  "label": "Medium"
-                },
-                {
-                  "value": "3",
-                  "label": "Default"
-                }, {
-                  "value": "4",
-                  "label": "Large"
-                }, {
-                  "value": "6",
-                  "label": "Extra Large"
-                }
-              ],
-              "default": "3"
+              "default": "my-3"
             }
           ]
         },
