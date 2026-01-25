@@ -1,0 +1,465 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
+{% assign selected_variant = product.selected_or_first_available_variant %}
+
+<style>
+  .swiper-button-prev,
+  .swiper-button-next {
+    color: black;
+    top: auto !important;
+    height: 20px;
+  }
+  .swiper-button-prev::after,
+  .swiper-button-next::after {
+    font-size: 20px;
+  }
+  .swiper-pagination {
+    color: black;
+    bottom: 0 !important;
+  }
+  .swiper-pagination-bullet-active {
+    background: black !important;
+  }
+  .product--information {
+    height: fit-content;
+  }
+</style>
+
+<div class="max-w-6xl mx-auto my-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div class="product--medias">
+      <div class="hidden md:block">
+        {% for media in product.media %}
+          <div class="h-100 overflow-hidden p-2">
+            {% render 'product-media'
+              , media: media %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="md:hidden">
+        <div class="swiper h-94">
+          <div class="swiper-wrapper">
+            {% for media in product.media %}
+              <div class="swiper-slide">
+                <div class="h-80 overflow-hidden p-2">
+                  {% render 'product-media'
+                    , media: media %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="swiper-pagination"></div>
+
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="product--information sticky top-5 p-2">
+      {% form 'product'
+        , product
+        , id: 'product-form'
+        , novalidate: 'novalidate' %}
+        <input
+          type="hidden"
+          name="id"
+          value="{{ selected_variant.id }}">
+
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'vendor' %}
+              <div class="mt-{{ block.settings.margin_top }} mb-{{ block.settings.margin_bottom }}">
+                <span class="text-xs text-gray-500">{{ product.vendor }}</span>
+              </div>
+            {% when 'title' %}
+              <div class="mt-{{ block.settings.margin_top }} mb-{{ block.settings.margin_bottom }}">
+                <h1 class="text-3xl text-gray-900">{{ product.title }}</h1>
+              </div>
+            {% when 'price' %}
+              <div class="my-3" id="price-{{ section.id }}">
+                <span class="text-base text-gray-500 line-through">{{ selected_variant.compare_at_price | money }}</span>
+                <span class="text-lg text-gray-900">{{ selected_variant.price | money }}</span>
+
+                {% if selected_variant.price < selected_variant.compare_at_price %}
+                  <span class="px-5 py-1 text-sm font-bold bg-red-500 rounded-full text-white mx-4">Sale</span>
+                {% endif %}
+              </div>
+            {% when 'variant_selector' %}
+              <div class="my-3">
+                {% unless product.has_only_default_variant %}
+                  <variant-selector data-url="{{ product.url}}" data-section="{{ section.id }}">
+                    {% for option in product.options_with_values %}
+                      <label for="Option-{{ section.id }}-{{ forloop.index0 }}">{{ option.name }}</label>
+
+                      <div class="my-2">
+                        <select
+                          name="options[{{ option.name | escape }}]"
+                          id="Option-{{ section.id }}-{{ forloop.index0 }}"
+                          class="w-full border py-3 px-3">
+                          {% for value in option.values %}
+                            <option
+                              value="{{ value | escape }}"
+                              {% if option.selected_value == value %}
+                              selected="selected"
+                              {% endif %}>
+                              {{ value }}
+                            </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+
+                      <script type="application/json">
+                        {{ product.variants | json }}
+                      </script>
+
+                    {% endfor %}
+                  </variant-selector>
+                {% endunless %}
+              </div>
+
+            {% when 'quantity' %}
+              <div class="my-3">
+                <label for="Quantity-{{ section.id }}">Quantity</label>
+
+                <div class="my-2">
+                  <input
+                    type="number"
+                    name="quantity"
+                    id="Quantity-{{ section.id }}"
+                    value="1"
+                    min="1"
+                    class="w-full border px-3 py-3">
+                </div>
+              </div>
+            {% when 'description' %}
+              <div class="my-3">
+                <p class="text-gray-700">{{ product.description }}</p>
+              </div>
+
+            {% when 'checkout_buttons' %}
+              <div class="my-3">
+                <button
+                  type="submit"
+                  name="add"
+                  class="w-full px-6 py-4 bg-gray-900 text-white hover:bg-gray-700 rounded-sm my-2"
+                  {% if selected_variant.available == false %}
+                  disabled
+                  {% endif %}>
+                  {% if selected_variant.available == false %}
+                    Sold out
+                  {% else %}
+                    Add to cart
+                  {% endif %}
+                </button>
+              </div>
+          {% else %}
+
+            {% endcase %}
+          {% endfor %}
+        {% endform %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    class VariantSelector extends HTMLElement {
+        constructor() {
+            super();
+            this.addEventListener("change", this.onVariantChange);
+        }
+
+        onVariantChange() {
+            this.getSelectedOptions();
+            this.getSelectedVariant();
+
+            if(this.currentVariant) {
+                this.updateURL();
+                this.updateFormID();
+                this.updatePrice();
+            }
+        }
+
+        /**
+         * Retrieves the currently selected options from all select elements within the component.
+         * Stores the selected values in an array and logs them to the console for debugging purposes.
+         * 
+         * @function getSelectedOptions
+         * @returns {void} - Updates this.options array with selected values from all select elements
+         */
+        getSelectedOptions() {
+            this.options = Array.from(this.querySelectorAll('select'), (select) => select.value);
+            console.log(this.options);
+        }
+
+        /**
+         * Retrieves and caches the product variant data as a JSON object.
+         * If the data has already been parsed and stored in `this.variantData`, it returns the cached data.
+         * Otherwise, it parses the JSON content from a child element of type "application/json" within the current element,
+         * stores it in `this.variantData`, and returns it.
+         *
+         * @returns {Object} The parsed variant data object.
+         */
+        getVariantJSON() {
+            this.variantData = this.variantData || JSON.parse(this.querySelector('[type="application/json"]').textContent);
+            return this.variantData;
+        }
+
+        /**
+         * Finds and sets the currently selected product variant based on the user's selected options.
+         * 
+         * This method compares the current selection (`this.options`) with each variant's options
+         * from the variant JSON. It sets `this.currentVariant` to the first variant whose options
+         * exactly match the user's selection.
+         * 
+         * Logs the selected variant to the console for debugging purposes.
+         */
+        getSelectedVariant() {
+            this.currentVariant = this.getVariantJSON().find(
+                (variant) => {
+                    const findings = !variant.options.map(
+                        (option, index) => {
+                            return this.options[index] === option;
+                        }
+                    ).includes(false);
+
+                    if(findings) return variant;
+                }
+            );
+
+            console.log(this.currentVariant);
+        }
+
+        /**
+         * Updates the browser's URL to reflect the currently selected product variant.
+         * If a variant is selected (`this.currentVariant` exists), the method modifies the URL
+         * using `window.history.replaceState` to include the variant's ID as a query parameter.
+         * This allows sharing or bookmarking the specific variant without reloading the page.
+         */
+        updateURL() {
+            if(!this.currentVariant) return;
+            window.history.replaceState({}, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
+        }
+
+        /**
+         * Updates the value of the hidden input field named "id" within the product form
+         * to match the currently selected variant's ID.
+         * 
+         * This ensures that when the form is submitted, the correct product variant is added to the cart.
+         * Assumes that `this.currentVariant.id` holds the ID of the selected variant.
+         */
+        updateFormID() {
+            const form_input = document.querySelector("#product-form").querySelector('input[name="id"]');
+            form_input.value = this.currentVariant.id;
+        }
+
+        /**
+         * Updates the displayed product price on the page when a new variant is selected.
+         * 
+         * This function fetches the updated HTML for the price section from the server,
+         * parses the response, and replaces the current price element's inner HTML with
+         * the new price. It uses the variant ID and section ID from the element's dataset
+         * to construct the fetch URL and to identify the correct price element.
+         *
+         * Steps:
+         * 1. Sends a fetch request to retrieve the updated price HTML for the selected variant.
+         * 2. Parses the returned HTML response.
+         * 3. Locates the current and new price elements by their IDs.
+         * 4. Updates the current price element's inner HTML with the new price content.
+         */
+        updatePrice() {
+            fetch(`${this.dataset.url}?variant=${this.currentVariant.id}&section_id=${this.dataset.section}`)
+            .then((response) => response.text())
+            .then((responseText) => {
+                const id = `price-${this.dataset.section}`;
+                const html = new DOMParser().parseFromString(responseText, 'text/html');
+
+                const oldPrice = document.getElementById(id);
+                const newPrice = html.getElementById(id);
+
+                if(oldPrice && newPrice) oldPrice.innerHTML = newPrice.innerHTML;
+            });
+        }
+    }
+
+    customElements.define("variant-selector", VariantSelector);
+  </script>
+
+  <script>
+    const swiper = new Swiper('.swiper', {
+        direction: 'horizontal',
+
+        pagination: {
+            el: '.swiper-pagination'
+        },
+
+        navigation: {
+            prevEl: '.swiper-button-prev',
+            nextEl: '.swiper-button-next'
+        }
+    })
+  </script>
+
+  {% schema %}
+    {
+      "name": "Product",
+      "blocks": [
+        {
+          "type": "vendor",
+          "name": "Vendor",
+          "limit": 1,
+          "settings": [
+            {
+              "type": "select",
+              "id": "margin_top",
+              "label": "Margin Top",
+              "options": [
+                {
+                  "value": "0",
+                  "label": "None"
+                },
+                {
+                  "value": "1",
+                  "label": "Small"
+                },
+                {
+                  "value": "2",
+                  "label": "Medium"
+                },
+                {
+                  "value": "3",
+                  "label": "Default"
+                }, {
+                  "value": "4",
+                  "label": "Large"
+                }, {
+                  "value": "6",
+                  "label": "Extra Large"
+                }
+              ],
+              "default": "3"
+            }, {
+              "type": "select",
+              "id": "margin_bottom",
+              "label": "Margin Bottom",
+              "options": [
+                {
+                  "value": "0",
+                  "label": "None"
+                },
+                {
+                  "value": "1",
+                  "label": "Small"
+                },
+                {
+                  "value": "2",
+                  "label": "Medium"
+                },
+                {
+                  "value": "3",
+                  "label": "Default"
+                }, {
+                  "value": "4",
+                  "label": "Large"
+                }, {
+                  "value": "6",
+                  "label": "Extra Large"
+                }
+              ],
+              "default": "3"
+            }
+          ]
+        },
+        {
+          "type": "title",
+          "name": "Title",
+          "limit": 1,
+          "settings": [
+            {
+              "type": "select",
+              "id": "margin_top",
+              "label": "Margin Top",
+              "options": [
+                {
+                  "value": "0",
+                  "label": "None"
+                },
+                {
+                  "value": "1",
+                  "label": "Small"
+                },
+                {
+                  "value": "2",
+                  "label": "Medium"
+                },
+                {
+                  "value": "3",
+                  "label": "Default"
+                }, {
+                  "value": "4",
+                  "label": "Large"
+                }, {
+                  "value": "6",
+                  "label": "Extra Large"
+                }
+              ],
+              "default": "3"
+            }, {
+              "type": "select",
+              "id": "margin_bottom",
+              "label": "Margin Bottom",
+              "options": [
+                {
+                  "value": "0",
+                  "label": "None"
+                },
+                {
+                  "value": "1",
+                  "label": "Small"
+                },
+                {
+                  "value": "2",
+                  "label": "Medium"
+                },
+                {
+                  "value": "3",
+                  "label": "Default"
+                }, {
+                  "value": "4",
+                  "label": "Large"
+                }, {
+                  "value": "6",
+                  "label": "Extra Large"
+                }
+              ],
+              "default": "3"
+            }
+          ]
+        },
+        {
+          "type": "price",
+          "name": "Price",
+          "limit": 1
+        },
+        {
+          "type": "variant_selector",
+          "name": "Variant Selector",
+          "limit": 1
+        }, {
+          "type": "quantity",
+          "name": "Quantity",
+          "limit": 1
+        }, {
+          "type": "description",
+          "name": "Description",
+          "limit": 1
+        }, {
+          "type": "checkout_buttons",
+          "name": "Checkout Buttons",
+          "limit": 1
+        }
+      ]
+    }
+  {% endschema %}
